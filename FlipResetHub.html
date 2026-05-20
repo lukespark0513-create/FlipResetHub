@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FlipResetHub — The #1 Rocket League Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0a1a;--bg2:#130f24;--bg3:#1a1433;
+  --purple:#7c3aed;--purple2:#a855f7;--purple3:#c084fc;
+  --accent:#e879f9;--gold:#f59e0b;
+  --text:#e2d9f3;--muted:#9580b8;
+  --border:rgba(168,85,247,0.25);--glow:rgba(168,85,247,0.15);
+  --red:#f87171;--green:#4ade80;
+}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* NAV */
+nav{background:rgba(13,10,26,0.95);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+.logo{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--purple2),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px;cursor:pointer}
+.nav-links{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.82rem;font-weight:500;transition:color 0.2s;cursor:pointer}
+.nav-links a:hover{color:var(--purple3)}
+.nav-btn{background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;border:none;padding:0.45rem 1rem;border-radius:8px;font-family:'Exo 2',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;transition:opacity 0.2s}
+.nav-btn:hover{opacity:0.85}
+.nav-user{display:flex;align-items:center;gap:0.6rem}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--accent));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:#fff;cursor:pointer;border:2px solid var(--border)}
+.nav-username{font-size:0.85rem;font-weight:600;color:var(--purple3)}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.35rem 0.75rem;border-radius:6px;font-family:'Exo 2',sans-serif;font-size:0.78rem;cursor:pointer;transition:all 0.2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* AUTH MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:2rem;width:90%;max-width:420px;text-align:center}
+.modal h2{font-family:'Orbitron',monospace;font-size:1.15rem;color:#fff;margin-bottom:0.4rem}
+.modal-sub{color:var(--muted);font-size:0.85rem;margin-bottom:1.5rem}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+.auth-tab{flex:1;padding:0.6rem;font-family:'Exo 2',sans-serif;font-size:0.875rem;font-weight:600;background:transparent;border:none;color:var(--muted);cursor:pointer;transition:color 0.2s;border-bottom:2px solid transparent;margin-bottom:-1px}
+.auth-tab.active{color:var(--purple3);border-bottom-color:var(--purple2)}
+.form-group{text-align:left;margin-bottom:1rem}
+.form-group label{font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:0.4rem}
+.form-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:0.7rem 1rem;color:var(--text);font-family:'Exo 2',sans-serif;font-size:0.9rem;transition:border-color 0.2s}
+.form-input:focus{outline:none;border-color:var(--purple2)}
+.form-input.error{border-color:var(--red)}
+.form-err{color:var(--red);font-size:0.78rem;margin-top:0.3rem;display:none}
+.form-err.show{display:block}
+.btn-full{width:100%;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;border:none;padding:0.8rem;border-radius:10px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;transition:opacity 0.2s;margin-top:0.5rem}
+.btn-full:hover{opacity:0.88}
+.auth-switch{font-size:0.82rem;color:var(--muted);margin-top:1rem}
+.auth-switch span{color:var(--purple3);cursor:pointer;font-weight:600}
+.auth-switch span:hover{text-decoration:underline}
+.success-msg{color:var(--green);font-size:0.82rem;margin-top:0.5rem;display:none}
+.success-msg.show{display:block}
+.modal-close-x{position:absolute;top:1rem;right:1.25rem;background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1}
+.modal-close-x:hover{color:#fff}
+
+/* PLAY FREE MODAL */
+.play-modal{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:2rem;max-width:420px;width:90%;text-align:center}
+.play-modal h2{font-family:'Orbitron',monospace;font-size:1.2rem;color:#fff;margin-bottom:0.75rem}
+.play-modal p{color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem;line-height:1.6}
+.modal-btns{display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap}
+.modal-close-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.6rem 1.25rem;border-radius:8px;cursor:pointer;font-family:'Exo 2',sans-serif;font-size:0.875rem}
+
+/* HERO */
+.hero{position:relative;padding:5rem 2rem 4rem;text-align:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(124,58,237,0.25) 0%,transparent 70%);pointer-events:none}
+.hero-badge{display:inline-block;background:rgba(168,85,247,0.15);border:1px solid var(--border);color:var(--purple3);padding:0.35rem 1rem;border-radius:999px;font-size:0.72rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1.5rem}
+.hero h1{font-family:'Orbitron',monospace;font-size:clamp(2rem,5vw,3.8rem);font-weight:900;line-height:1.1;margin-bottom:1rem;background:linear-gradient(135deg,#fff 0%,var(--purple3) 50%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);font-size:1rem;max-width:560px;margin:0 auto 2.5rem;line-height:1.7}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--accent));color:#fff;border:none;padding:0.875rem 2rem;border-radius:10px;font-family:'Exo 2',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;transition:transform 0.2s,opacity 0.2s}
+.btn-primary:hover{transform:translateY(-2px);opacity:0.9}
+.btn-secondary{background:transparent;color:var(--purple3);border:1px solid var(--border);padding:0.875rem 2rem;border-radius:10px;font-family:'Exo 2',sans-serif;font-weight:600;font-size:0.95rem;cursor:pointer;transition:background 0.2s,transform 0.2s}
+.btn-secondary:hover{background:var(--glow);transform:translateY(-2px)}
+
+/* WELCOME BANNER */
+.welcome-banner{background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(232,121,249,0.1));border:1px solid var(--border);border-radius:12px;padding:1rem 1.5rem;margin:1.5rem 2rem 0;display:none;align-items:center;gap:1rem}
+.welcome-banner.show{display:flex}
+.welcome-banner p{font-size:0.9rem;color:var(--purple3);font-weight:600}
+.welcome-banner span{color:var(--accent)}
+
+/* STATS BAR */
+.stats-bar{display:flex;gap:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2)}
+.stat-item{flex:1;padding:1.25rem 0.5rem;text-align:center;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;color:var(--purple3)}
+.stat-label{font-size:0.7rem;color:var(--muted);margin-top:0.25rem;text-transform:uppercase;letter-spacing:1px}
+
+/* SECTIONS */
+.section{padding:2.5rem 2rem}
+.section-alt{background:var(--bg2)}
+.section-title{font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:0.4rem}
+.section-sub{color:var(--muted);font-size:0.88rem;margin-bottom:1.75rem}
+
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.5rem;transition:border-color 0.2s,transform 0.2s}
+.card:hover{border-color:var(--purple2);transform:translateY(-3px)}
+.card-icon{font-size:1.5rem;margin-bottom:0.75rem}
+.card h3{font-family:'Orbitron',monospace;font-size:0.9rem;font-weight:700;color:#fff;margin-bottom:0.5rem}
+.card p{color:var(--muted);font-size:0.85rem;line-height:1.6}
+.card-link{display:inline-flex;align-items:center;gap:0.4rem;color:var(--purple3);font-size:0.85rem;font-weight:600;margin-top:0.75rem;text-decoration:none;cursor:pointer;transition:color 0.2s}
+.card-link:hover{color:var(--accent)}
+
+/* LEADERBOARD */
+.leaderboard{background:var(--bg3);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.lb-header{display:grid;grid-template-columns:44px 1fr 110px 110px;padding:0.75rem 1.25rem;background:rgba(168,85,247,0.1);border-bottom:1px solid var(--border);font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.lb-row{display:grid;grid-template-columns:44px 1fr 110px 110px;padding:0.8rem 1.25rem;border-bottom:1px solid rgba(168,85,247,0.08);align-items:center;transition:background 0.15s}
+.lb-row:hover{background:rgba(168,85,247,0.05)}
+.lb-row:last-child{border-bottom:none}
+.rank{font-family:'Orbitron',monospace;font-weight:700;font-size:0.9rem}
+.rank-1{color:var(--gold)}.rank-2{color:#c0c0c0}.rank-3{color:#cd7f32}.rank-other{color:var(--muted)}
+.player-name{font-weight:600;font-size:0.88rem}
+.you-badge{background:rgba(168,85,247,0.2);color:var(--purple3);font-size:0.65rem;padding:0.1rem 0.4rem;border-radius:4px;margin-left:0.4rem;font-weight:600}
+.mmr-badge{background:rgba(168,85,247,0.15);color:var(--purple3);padding:0.2rem 0.7rem;border-radius:999px;font-size:0.78rem;font-weight:700;font-family:'Orbitron',monospace;display:inline-block}
+.rank-title{color:var(--muted);font-size:0.78rem}
+.lb-tabs{display:flex;gap:0.4rem;margin-bottom:1rem;flex-wrap:wrap}
+.lb-tab{background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.35rem 0.85rem;border-radius:999px;font-family:'Exo 2',sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s}
+.lb-tab.active{background:var(--purple);border-color:var(--purple);color:#fff}
+
+/* HIGHLIGHTS */
+.highlights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.highlight-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:transform 0.2s,border-color 0.2s}
+.highlight-card:hover{transform:translateY(-3px);border-color:var(--purple2)}
+.highlight-thumb{height:150px;background:linear-gradient(135deg,#1a0d3a,#2d1b69);display:flex;align-items:center;justify-content:center}
+.play-btn{width:48px;height:48px;border-radius:50%;background:rgba(168,85,247,0.85);display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;transition:transform 0.2s}
+.play-btn:hover{transform:scale(1.1)}
+.highlight-info{padding:0.875rem}
+.highlight-info h4{font-weight:600;font-size:0.88rem;margin-bottom:0.3rem}
+.highlight-meta{font-size:0.75rem;color:var(--muted);display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap}
+.highlight-tag{background:rgba(168,85,247,0.15);color:var(--purple3);padding:0.12rem 0.5rem;border-radius:4px;font-size:0.7rem;font-weight:600}
+
+/* RANK TRACKER */
+.rank-tracker{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:1.5rem}
+.connect-btn{background:linear-gradient(135deg,#1a1433,#2d1b69);border:1px solid var(--border);color:var(--purple3);padding:0.875rem 1.5rem;border-radius:10px;font-family:'Exo 2',sans-serif;font-weight:600;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;gap:0.75rem;transition:border-color 0.2s,transform 0.2s;width:100%;justify-content:center;margin-top:1rem}
+.connect-btn:hover{border-color:var(--purple2);transform:translateY(-2px)}
+.rank-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.6rem;margin-top:1.25rem}
+.rank-mode{background:rgba(168,85,247,0.06);border:1px solid var(--border);border-radius:8px;padding:0.875rem;text-align:center}
+.rank-mode-name{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.4rem}
+.rank-mode-rank{font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:700;color:var(--purple3)}
+.rank-mode-mmr{font-size:0.72rem;color:var(--muted);margin-top:0.15rem}
+
+/* TIPS */
+.tips-list{display:flex;flex-direction:column;gap:0.6rem}
+.tip-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:0.875rem 1.25rem;display:flex;align-items:center;gap:1rem;transition:border-color 0.2s}
+.tip-item:hover{border-color:var(--purple2)}
+.tip-num{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:rgba(168,85,247,0.3);min-width:28px}
+.tip-content h4{font-weight:600;font-size:0.88rem;margin-bottom:0.15rem}
+.tip-content p{font-size:0.78rem;color:var(--muted)}
+.tip-type{font-size:0.68rem;padding:0.18rem 0.55rem;border-radius:4px;font-weight:600}
+.tip-video{background:rgba(239,68,68,0.15);color:#f87171}
+.tip-article{background:rgba(34,197,94,0.15);color:#4ade80}
+.tip-meta{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:0.35rem}
+
+/* SUBMIT CLIP */
+.submit-section{background:rgba(168,85,247,0.08);border:1px dashed var(--border);border-radius:12px;padding:1.75rem;text-align:center;margin-top:1.5rem}
+.submit-section h3{font-family:'Orbitron',monospace;font-size:0.95rem;color:var(--purple3);margin-bottom:0.4rem}
+.submit-section p{color:var(--muted);font-size:0.83rem;margin-bottom:1rem}
+.clip-input{width:100%;max-width:400px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:0.65rem 1rem;color:var(--text);font-family:'Exo 2',sans-serif;font-size:0.875rem;margin-bottom:0.65rem}
+.clip-input::placeholder{color:var(--muted)}
+.clip-input:focus{outline:none;border-color:var(--purple2)}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:2rem;text-align:center}
+.footer-logo{font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;background:linear-gradient(135deg,var(--purple2),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.5rem}
+.footer-sub{font-size:0.8rem;color:var(--muted)}
+.footer-links{margin-top:1rem;display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap}
+.footer-links a{color:var(--purple3);font-size:0.83rem;text-decoration:none;cursor:pointer}
+.footer-creator{font-size:0.73rem;color:rgba(168,85,247,0.45);margin-top:0.75rem}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">⚡ FlipResetHub</div>
+  <div class="nav-links">
+    <a onclick="scrollSec('compete')">Compete</a>
+    <a onclick="scrollSec('leaderboard')">Leaderboard</a>
+    <a onclick="scrollSec('highlights')">Highlights</a>
+    <a onclick="scrollSec('tips')">Tips</a>
+    <a href="https://discord.gg/rocketleague" target="_blank">Community</a>
+    <div id="nav-auth">
+      <button class="nav-btn" onclick="openAuth('login')">Sign In</button>
+      <button class="nav-btn" style="background:transparent;border:1px solid var(--border);color:var(--purple3);margin-left:0.4rem" onclick="openAuth('signup')">Sign Up</button>
+    </div>
+    <div id="nav-user" class="nav-user" style="display:none">
+      <div class="avatar" id="nav-avatar">?</div>
+      <span class="nav-username" id="nav-username"></span>
+      <button class="logout-btn" onclick="logout()">Log Out</button>
+    </div>
+    <button class="nav-btn" onclick="openPlay()" style="background:linear-gradient(135deg,#059669,#10b981)">▶ Play Free</button>
+  </div>
+</nav>
+
+<!-- WELCOME BANNER -->
+<div class="welcome-banner" id="welcome-banner">
+  <span style="font-size:1.5rem">🚀</span>
+  <p>Welcome back, <span id="welcome-name"></span>! You're logged in to FlipResetHub.</p>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-badge">🚀 The #1 Rocket League Hub</div>
+  <h1>Rise Through the Ranks.<br/>Compete. Win.</h1>
+  <p>Track your MMR, compete in prize pools, learn from the best, and connect with the Rocket League community — all in one place.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="openPlay()">▶ Play Free Now</button>
+    <button class="btn-secondary" onclick="scrollSec('compete')">View Tournaments →</button>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-num">12,400+</div><div class="stat-label">Players</div></div>
+  <div class="stat-item"><div class="stat-num">$5,200</div><div class="stat-label">Prize Pools</div></div>
+  <div class="stat-item"><div class="stat-num">340+</div><div class="stat-label">Tournaments</div></div>
+  <div class="stat-item"><div class="stat-num">48</div><div class="stat-label">Active Events</div></div>
+</div>
+
+<!-- COMPETE -->
+<section class="section" id="compete">
+  <div class="section-title">🏆 Compete &amp; Win</div>
+  <div class="section-sub">Join tournaments, cups, and prize pool events via the official Rocket League Discord.</div>
+  <div class="cards-grid">
+    <div class="card"><div class="card-icon">🎖️</div><h3>Prize Pool Events</h3><p>Compete in weekly prize pool tournaments. Climb the bracket and take home rewards.</p><a class="card-link" href="https://discord.gg/rocketleague" target="_blank">Join on Discord →</a></div>
+    <div class="card"><div class="card-icon">🥇</div><h3>FlipReset Cups</h3><p>Monthly cups exclusively for the FlipResetHub community. Sign up and prove your skills.</p><a class="card-link" href="https://discord.gg/rocketleague" target="_blank">Sign Up →</a></div>
+    <div class="card"><div class="card-icon">📅</div><h3>Community Events</h3><p>1v1 showdowns to 3v3 scrims — browse all upcoming events that fit your rank.</p><a class="card-link" href="https://discord.gg/rocketleague" target="_blank">Browse Events →</a></div>
+  </div>
+</section>
+
+<!-- RANK TRACKER -->
+<section class="section section-alt">
+  <div class="section-title">🎮 Rank Tracker</div>
+  <div class="section-sub">Connect your Epic Games account to track your MMR across every game mode.</div>
+  <div class="rank-tracker">
+    <p style="color:var(--muted);font-size:0.88rem;line-height:1.6">Link your Epic Games account once and your ranks update automatically — competitive and casual, every playlist.</p>
+    <button class="connect-btn">🎮 Connect Epic Games Account</button>
+    <div class="rank-modes">
+      <div class="rank-mode"><div class="rank-mode-name">Soccar 3v3</div><div class="rank-mode-rank">Diamond III</div><div class="rank-mode-mmr">1,247 MMR</div></div>
+      <div class="rank-mode"><div class="rank-mode-name">Doubles 2v2</div><div class="rank-mode-rank">Platinum II</div><div class="rank-mode-mmr">1,095 MMR</div></div>
+      <div class="rank-mode"><div class="rank-mode-name">Duel 1v1</div><div class="rank-mode-rank">Gold I</div><div class="rank-mode-mmr">872 MMR</div></div>
+      <div class="rank-mode"><div class="rank-mode-name">Hoops</div><div class="rank-mode-rank">Silver III</div><div class="rank-mode-mmr">784 MMR</div></div>
+      <div class="rank-mode"><div class="rank-mode-name">Rumble</div><div class="rank-mode-rank">Platinum I</div><div class="rank-mode-mmr">1,010 MMR</div></div>
+      <div class="rank-mode"><div class="rank-mode-name">Dropshot</div><div class="rank-mode-rank">Gold III</div><div class="rank-mode-mmr">950 MMR</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- LEADERBOARD -->
+<section class="section" id="leaderboard">
+  <div class="section-title">📊 MMR Leaderboard</div>
+  <div class="section-sub">See who's sitting at the top across every competitive playlist.</div>
+  <div class="lb-tabs">
+    <button class="lb-tab active" onclick="setTab(this)">Soccar 3v3</button>
+    <button class="lb-tab" onclick="setTab(this)">Doubles 2v2</button>
+    <button class="lb-tab" onclick="setTab(this)">Duel 1v1</button>
+    <button class="lb-tab" onclick="setTab(this)">Hoops</button>
+    <button class="lb-tab" onclick="setTab(this)">Rumble</button>
+  </div>
+  <div class="leaderboard">
+    <div class="lb-header"><span>#</span><span>Player</span><span>MMR</span><span>Rank</span></div>
+    <div class="lb-row"><span class="rank rank-1">1</span><span class="player-name">SkyFlipz</span><span><span class="mmr-badge">2,847</span></span><span class="rank-title">SSL</span></div>
+    <div class="lb-row"><span class="rank rank-2">2</span><span class="player-name">NitroBoosted_</span><span><span class="mmr-badge">2,791</span></span><span class="rank-title">SSL</span></div>
+    <div class="lb-row"><span class="rank rank-3">3</span><span class="player-name">AerialAce99</span><span><span class="mmr-badge">2,704</span></span><span class="rank-title">GC III</span></div>
+    <div class="lb-row"><span class="rank rank-other">4</span><span class="player-name">WaveDashKing</span><span><span class="mmr-badge">2,633</span></span><span class="rank-title">GC II</span></div>
+    <div class="lb-row" id="lb-you-row" style="display:none"><span class="rank rank-other" id="lb-you-rank">—</span><span class="player-name" id="lb-you-name">You<span class="you-badge">YOU</span></span><span><span class="mmr-badge" id="lb-you-mmr">—</span></span><span class="rank-title">Unranked</span></div>
+  </div>
+</section>
+
+<!-- HIGHLIGHTS -->
+<section class="section section-alt" id="highlights">
+  <div class="section-title">🎬 Highlights of the Day</div>
+  <div class="section-sub">Today's best clips from the FlipResetHub community.</div>
+  <div class="highlights-grid">
+    <div class="highlight-card"><div class="highlight-thumb"><div class="play-btn">▶</div></div><div class="highlight-info"><h4>Insane Ceiling Reset into 5-Flip Goal</h4><div class="highlight-meta"><span>by SkyFlipz</span><span>2.4k views</span><span class="highlight-tag">GOAL</span></div></div></div>
+    <div class="highlight-card"><div class="highlight-thumb" style="background:linear-gradient(135deg,#0d2d3a,#0d4a4a)"><div class="play-btn">▶</div></div><div class="highlight-info"><h4>Back-to-Back Flip Resets in Overtime</h4><div class="highlight-meta"><span>by AerialAce99</span><span>1.8k views</span><span class="highlight-tag">CLUTCH</span></div></div></div>
+    <div class="highlight-card"><div class="highlight-thumb" style="background:linear-gradient(135deg,#2d1a00,#4a2d00)"><div class="play-btn">▶</div></div><div class="highlight-info"><h4>Pinch + Air Dribble Combo — 3v3 Ranked</h4><div class="highlight-meta"><span>by NitroBoosted_</span><span>3.1k views</span><span class="highlight-tag">RANKED</span></div></div></div>
+  </div>
+  <div class="submit-section">
+    <h3>📎 Submit Your Highlight</h3>
+    <p>Paste a link to your clip (YouTube, Streamable, Medal, etc.) and it could be featured!</p>
+    <input class="clip-input" type="text" placeholder="Paste your clip link here..." id="clipLink"/>
+    <br/>
+    <button class="btn-primary" onclick="submitClip()" style="font-size:0.875rem;padding:0.6rem 1.4rem">Submit Clip 🚀</button>
+    <p id="clip-msg" style="color:var(--green);font-size:0.8rem;margin-top:0.5rem;display:none">✅ Clip submitted for review!</p>
+  </div>
+</section>
+
+<!-- TIPS -->
+<section class="section" id="tips">
+  <div class="section-title">💡 Tips &amp; Guides</div>
+  <div class="section-sub">Improve your game with video tutorials and written guides — curated by FlipResetHub.</div>
+  <div class="tips-list">
+    <div class="tip-item"><div class="tip-num">01</div><div class="tip-content"><h4>How to Perform a Flip Reset</h4><p>Master the signature mechanic — step by step for all skill levels.</p></div><div class="tip-meta"><span class="tip-type tip-video">📹 Video</span><a class="card-link" href="https://www.youtube.com/results?search_query=rocket+league+flip+reset+tutorial" target="_blank" style="margin-top:0.4rem">Watch →</a></div></div>
+    <div class="tip-item"><div class="tip-num">02</div><div class="tip-content"><h4>Boost Management 101</h4><p>Never run out of boost at the wrong time. Learn rotations and pad control.</p></div><div class="tip-meta"><span class="tip-type tip-article">📄 Guide</span><a class="card-link" href="https://www.youtube.com/results?search_query=rocket+league+boost+management" target="_blank" style="margin-top:0.4rem">Read →</a></div></div>
+    <div class="tip-item"><div class="tip-num">03</div><div class="tip-content"><h4>Air Dribbling for Beginners</h4><p>Carry the ball through the air and open up your entire offensive game.</p></div><div class="tip-meta"><span class="tip-type tip-video">📹 Video</span><a class="card-link" href="https://www.youtube.com/results?search_query=rocket+league+air+dribble+tutorial" target="_blank" style="margin-top:0.4rem">Watch →</a></div></div>
+    <div class="tip-item"><div class="tip-num">04</div><div class="tip-content"><h4>Rotation &amp; Positioning in 3v3</h4><p>Understand shadow defense, rotation timing, and when to challenge.</p></div><div class="tip-meta"><span class="tip-type tip-article">📄 Guide</span><a class="card-link" href="https://www.youtube.com/results?search_query=rocket+league+rotation+guide" target="_blank" style="margin-top:0.4rem">Read →</a></div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">⚡ FlipResetHub</div>
+  <div class="footer-sub">The premier destination for Rocket League competitors and enthusiasts.</div>
+  <div class="footer-links">
+    <a href="https://discord.gg/rocketleague" target="_blank">Community Discord →</a>
+    <a onclick="openPlay()">Play Rocket League Free →</a>
+    <a onclick="openAuth('signup')">Create Account →</a>
+  </div>
+  <div class="footer-creator">© 2025 FlipResetHub · Created by You · All rights reserved</div>
+</footer>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close-x" onclick="closeAuth()">✕</button>
+    <h2>⚡ FlipResetHub</h2>
+    <p class="modal-sub" id="auth-sub">Sign in to your account</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    <!-- LOGIN -->
+    <div id="form-login">
+      <div class="form-group"><label>Username or Email</label><input class="form-input" type="text" id="login-user" placeholder="Enter username or email"/><div class="form-err" id="login-user-err">Please enter your username or email.</div></div>
+      <div class="form-group"><label>Password</label><input class="form-input" type="password" id="login-pass" placeholder="Enter password"/><div class="form-err" id="login-pass-err">Please enter your password.</div></div>
+      <div class="form-err" id="login-general-err" style="text-align:center;margin-top:0.5rem">Account not found. Check your credentials.</div>
+      <button class="btn-full" onclick="doLogin()">Sign In →</button>
+      <div class="auth-switch">Don't have an account? <span onclick="switchTab('signup')">Sign Up</span></div>
+    </div>
+    <!-- SIGNUP -->
+    <div id="form-signup" style="display:none">
+      <div class="form-group"><label>Username</label><input class="form-input" type="text" id="su-username" placeholder="Choose a username"/><div class="form-err" id="su-username-err">Username must be at least 3 characters.</div></div>
+      <div class="form-group"><label>Email</label><input class="form-input" type="email" id="su-email" placeholder="your@email.com"/><div class="form-err" id="su-email-err">Please enter a valid email address.</div></div>
+      <div class="form-group"><label>Password</label><input class="form-input" type="password" id="su-pass" placeholder="At least 6 characters"/><div class="form-err" id="su-pass-err">Password must be at least 6 characters.</div></div>
+      <div class="form-group"><label>Confirm Password</label><input class="form-input" type="password" id="su-pass2" placeholder="Repeat password"/><div class="form-err" id="su-pass2-err">Passwords do not match.</div></div>
+      <div class="form-err" id="su-general-err" style="text-align:center;margin-top:0.5rem">Username or email already taken.</div>
+      <div class="success-msg" id="su-success">✅ Account created! Signing you in...</div>
+      <button class="btn-full" onclick="doSignup()">Create Account →</button>
+      <div class="auth-switch">Already have an account? <span onclick="switchTab('login')">Sign In</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAY FREE MODAL -->
+<div class="modal-overlay" id="play-modal">
+  <div class="play-modal">
+    <h2>🚀 Play Rocket League Free!</h2>
+    <p>Rocket League is free to play! Download it now on your platform of choice and get on the pitch.</p>
+    <div class="modal-btns">
+      <a href="https://www.epicgames.com/store/p/rocket-league" target="_blank"><button class="btn-primary" style="font-size:0.875rem;padding:0.65rem 1.25rem">Get on Epic Games</button></a>
+      <button class="modal-close-btn" onclick="closePlay()">Maybe Later</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Account storage (localStorage persists across page refreshes on a real hosted site)
+function getAccounts(){ try{ return JSON.parse(localStorage.getItem('frh_accounts')||'[]') }catch(e){return []} }
+function saveAccounts(a){ try{ localStorage.setItem('frh_accounts', JSON.stringify(a)) }catch(e){} }
+function getCurrentUser(){ try{ return localStorage.getItem('frh_current')||null }catch(e){return null} }
+function saveCurrentUser(u){ try{ if(u) localStorage.setItem('frh_current',u); else localStorage.removeItem('frh_current') }catch(e){} }
+
+const cu = getCurrentUser();
+if(cu) setLoggedIn(cu);
+
+function setLoggedIn(u){
+  saveCurrentUser(u);
+  document.getElementById('nav-auth').style.display='none';
+  document.getElementById('nav-user').style.display='flex';
+  document.getElementById('nav-username').textContent=u;
+  document.getElementById('nav-avatar').textContent=u.charAt(0).toUpperCase();
+  document.getElementById('welcome-banner').classList.add('show');
+  document.getElementById('welcome-name').textContent=u;
+  document.getElementById('lb-you-row').style.display='grid';
+  document.getElementById('lb-you-name').innerHTML=u+'<span class="you-badge">YOU</span>';
+}
+function logout(){
+  saveCurrentUser(null);
+  document.getElementById('nav-auth').style.display='flex';
+  document.getElementById('nav-user').style.display='none';
+  document.getElementById('welcome-banner').classList.remove('show');
+  document.getElementById('lb-you-row').style.display='none';
+}
+function openAuth(tab){document.getElementById('auth-modal').classList.add('open');switchTab(tab)}
+function closeAuth(){document.getElementById('auth-modal').classList.remove('open');clearErrors()}
+document.getElementById('auth-modal').addEventListener('click',function(e){if(e.target===this)closeAuth()})
+function switchTab(t){
+  document.getElementById('tab-login').classList.toggle('active',t==='login');
+  document.getElementById('tab-signup').classList.toggle('active',t==='signup');
+  document.getElementById('form-login').style.display=t==='login'?'block':'none';
+  document.getElementById('form-signup').style.display=t==='signup'?'block':'none';
+  document.getElementById('auth-sub').textContent=t==='login'?'Sign in to your account':'Create your free account';
+  clearErrors();
+}
+function clearErrors(){
+  document.querySelectorAll('.form-err,.success-msg').forEach(e=>{e.classList.remove('show')});
+  document.querySelectorAll('.form-input').forEach(i=>i.classList.remove('error'));
+}
+function showErr(id,inputId){
+  document.getElementById(id).classList.add('show');
+  if(inputId) document.getElementById(inputId).classList.add('error');
+}
+function doLogin(){
+  clearErrors();
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  let ok=true;
+  if(!u){showErr('login-user-err','login-user');ok=false}
+  if(!p){showErr('login-pass-err','login-pass');ok=false}
+  if(!ok) return;
+  const accounts=getAccounts();
+  const acc=accounts.find(a=>a.username.toLowerCase()===u.toLowerCase()||a.email.toLowerCase()===u.toLowerCase());
+  if(!acc||acc.password!==p){showErr('login-general-err');return}
+  closeAuth();
+  setLoggedIn(acc.username);
+}
+function doSignup(){
+  clearErrors();
+  const u=document.getElementById('su-username').value.trim();
+  const e=document.getElementById('su-email').value.trim();
+  const p=document.getElementById('su-pass').value;
+  const p2=document.getElementById('su-pass2').value;
+  let ok=true;
+  if(u.length<3){showErr('su-username-err','su-username');ok=false}
+  if(!e.includes('@')||!e.includes('.')){showErr('su-email-err','su-email');ok=false}
+  if(p.length<6){showErr('su-pass-err','su-pass');ok=false}
+  if(p!==p2){showErr('su-pass2-err','su-pass2');ok=false}
+  if(!ok) return;
+  const accounts=getAccounts();
+  if(accounts.find(a=>a.username.toLowerCase()===u.toLowerCase()||a.email.toLowerCase()===e.toLowerCase())){showErr('su-general-err');return}
+  accounts.push({username:u,email:e,password:p});
+  saveAccounts(accounts);
+  document.getElementById('su-success').classList.add('show');
+  setTimeout(()=>{closeAuth();setLoggedIn(u)},1200);
+}
+function openPlay(){document.getElementById('play-modal').classList.add('open')}
+function closePlay(){document.getElementById('play-modal').classList.remove('open')}
+document.getElementById('play-modal').addEventListener('click',function(e){if(e.target===this)closePlay()})
+function setTab(el){document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
+function scrollSec(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
+function submitClip(){
+  const v=document.getElementById('clipLink').value.trim();
+  if(!v){document.getElementById('clipLink').style.borderColor='var(--red)';return}
+  document.getElementById('clipLink').style.borderColor='';
+  document.getElementById('clipLink').value='';
+  const m=document.getElementById('clip-msg');
+  m.style.display='block';
+  setTimeout(()=>m.style.display='none',3000);
+}
+</script>
+</body>
+</html>
